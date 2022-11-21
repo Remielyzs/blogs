@@ -1,0 +1,210 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>显卡深度学习性能测试（NLP） | Remiel</title>
+<link rel="shortcut icon" href="https://blog.changli.tech//favicon.ico?v=1669012405019">
+<link href="https://cdn.remixicon.com/releases/v2.1.0/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://blog.changli.tech//styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="显卡深度学习性能测试（NLP） | Remiel - Atom Feed" href="https://blog.changli.tech//atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="本文使用huggingface提供的QA脚本进行基准测试（在测试中发现V100性能与宣称有差别）
+新建一个conda的虚拟环境并进入后
+首先安装pytorch，这里请在pytorch安装中寻找对应cuda版本的命令进行安装
+然后使用如下命令..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://blog.changli.tech/">
+  <img class="avatar" src="https://blog.changli.tech//images/avatar.png?v=1669012405019" alt="">
+  </a>
+  <h1 class="site-title">
+    Remiel
+  </h1>
+  <p class="site-description">
+    单纯的哔哔叨叨
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="https://blog.changli.tech/about" class="menu">
+          关于
+        </a>
+      
+    
+      
+        <a href="https://blog.changli.tech/4r07Co8st" class="menu">
+          Useful Links
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/Remielyzs" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+        <a href="https://www.zhihu.com/people/MisakaLee" target="_blank">
+          <i class="ri-zhihu-line"></i>
+        </a>
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              显卡深度学习性能测试（NLP）
+            </h2>
+            <div class="post-info">
+              <span>
+                2021-04-16
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>本文使用huggingface提供的QA脚本进行基准测试（在测试中发现V100性能与宣称有差别）<br>
+新建一个conda的虚拟环境并进入后<br>
+首先安装pytorch，这里请在<a href="https://pytorch.org/get-started/previous-versions/">pytorch安装</a>中寻找对应cuda版本的命令进行安装<br>
+然后使用如下命令安装transformers和datasets</p>
+<pre><code>pip install transformers datasets
+</code></pre>
+<p>最后使用如下命令拉取对应transformers版本的脚本（以4.5.0为例）</p>
+<pre><code>git clone --branch v4.5.0 https://github.com/huggingface/transformers.git
+</code></pre>
+<p>全部安装完成之后可进入/transformers/examples/question-answering/目录下，</p>
+<pre><code>python run_qa.py --model_name_or_path bert-base-uncased --dataset_name squad --do_train --do_eval --per_device_train_batch_size 12 --learning_rate 3e-5 --num_train_epochs 2 --max_seq_length 384 --doc_stride 128 --output_dir /tmp/debug_squad/
+</code></pre>
+<p>此处output_dir可改为自己的目录。<br>
+如果出现raw.githubusercontent.com无法连接，可以修改hosts或者拉取datasets的脚本，并在dataset_name中修改为相应目录下squad.py。例如我在run_qa.py当前目录下使用</p>
+<pre><code>git clone https://github.com/huggingface/datasets.git
+</code></pre>
+<p>拉取dataset之后，此处应修改为./datasets/datasets/squad/squad.py<br>
+同时，在run_qa.py的540行（V4.5.0）</p>
+<pre><code>metric = load_metric(&quot;squad_v2&quot; if data_args.version_2_with_negative else &quot;squad&quot;)
+</code></pre>
+<p>也要做对应修改，由于此处我仅使用squad1.1进行评测，可以直接修改else后的squad为./datasets/metrics/squad/squad.py<br>
+即</p>
+<pre><code>metric = load_metric(&quot;squad_v2&quot; if data_args.version_2_with_negative else &quot;./datasets/metrics/squad/squad.py&quot;)
+</code></pre>
+<p>如果不同则需要在metrics中自己寻找合适的metrics<br>
+最后如果有多卡但只需要评测单卡性能，可以使用CUDA_VISIBLE_DEVICES放在python前面进行选择。<br>
+例如</p>
+<pre><code>CUDA_VISIBLE_DEVICES=1 python run_qa.py --model_name_or_path bert-base-uncased --dataset_name squad --do_train --do_eval --per_device_train_batch_size 12 --learning_rate 3e-5 --num_train_epochs 2 --max_seq_length 384 --doc_stride 128 --output_dir /tmp/debug_squad/
+</code></pre>
+<p>修改后的命令为</p>
+<pre><code>CUDA_VISIBLE_DEVICES=1 python run_qa.py --model_name_or_path bert-base-uncased --dataset_name ./datasets/datasets/squad/squad.py --do_train --do_eval --per_device_train_batch_size 12 --learning_rate 3e-5 --num_train_epochs 2 --max_seq_length 384 --doc_stride 128 --output_dir /tmp/debug_squad/
+</code></pre>
+<p>即为仅有第二张卡对此程序可见，也可指定多张卡，使用,分割。</p>
+<p>此前使用此脚本实测<br>
+单卡T4 16G运行需要192分钟。<br>
+单卡V100 32G运行需要76分钟。<br>
+单卡A10 24G运行需要52分钟。<br>
+单卡A10 24G使用Docker调用运行需要60分钟，性能损失约13.33%。</p>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+
+        
+
+        <div class="site-footer">
+  
+  <a class="rss" href="https://blog.changli.tech//atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://blog.changli.tech/</id>
+    <title>Remiel</title>
+    <updated>2022-11-21T06:33:33.921Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://blog.changli.tech/"/>
+    <link rel="self" href="https://blog.changli.tech/atom.xml"/>
+    <subtitle>单纯的哔哔叨叨</subtitle>
+    <logo>https://blog.changli.tech/images/avatar.png</logo>
+    <icon>https://blog.changli.tech/favicon.ico</icon>
+    <rights>All rights reserved 2022, Remiel</rights>
+    <entry>
+        <title type="html"><![CDATA[Flask+Gunicorn异步化]]></title>
+        <id>https://blog.changli.tech/flaskgoricorn-yi-bu-hua/</id>
+        <link href="https://blog.changli.tech/flaskgoricorn-yi-bu-hua/">
+        </link>
+        <updated>2021-11-19T07:55:25.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="0-异步化原因">0. 异步化原因</h1>
+<p>此前Flask+Gunicorn保证了线上服务可以应对高并发。而异步化则是为了实现数据落库等高耗时的IO、网络操作，使其不影响线上服务的响应速度（即下一次线上服务结果的返回要等到落库后）。</p>
+<h1 id="1-flask异步化">1. Flask异步化</h1>
+<p>Python本身支持异步，但由于Flask对异步支持不佳，故而需要引入其他框架。<br>
+目前比较常用的支持异步的Python后端有Sanic、Quart以及Flask[async]</p>
+<ul>
+<li>其中Flask[async]在Flask2.0提出，需要单独安装，但实现文档不详，多次测试无法实现异步操作，排除。</li>
+<li>Sanic改动相对较大并且切换后发现会于主程序中途退出，不会返回实际结果，起初怀疑为连接超时问题，更改后也遭遇相同问题，无法解决故而抛弃。</li>
+<li>Quart是第三方对Flask的异步实现，切换也相当简单，部署操作也可支持Gunicorn(需指定worker类型)</li>
+</ul>
+<p>综上Quart为目前改动小并且实际有效，以下以Quart为例介绍如何从Flask进行迁移</p>
+<h1 id="2-具体更改">2. 具体更改</h1>
+<pre><code>pip install quart
+</code></pre>
+<h1 id="21-高耗时函数">2.1 高耗时函数</h1>
+<pre><code>async def highCostFunc(*args,**kwargs):
+    Implementation Detail
+</code></pre>
+<h1 id="22-引用与定义">2.2 引用与定义</h1>
+<pre><code>#修改前
+from flask import Flask, Response, request
+···
+app = Flask(__name__)
+#修改后
+from flask import Response #需要实际测试，本项目中测试兼容，可不做更改
+from quart import Quart, request
+···
+app = Quart(__name__)
+</code></pre>
+<h1 id="23-应用入口">2.3 应用入口</h1>
+<pre><code>#修改前
+request_data = json.loads(str(request.get_data(), encoding=&quot;utf-8&quot;))
+···
+highCostFunc(*args, **kwargs)
+#修改后
+request_data = await request.get_json()
+···
+app.add_background_task(highCostFunc, *args, **kwargs)
+</code></pre>
+<h1 id="3-部署">3. 部署</h1>
+<p>Gunicorn作为WSGI框架无法直接部署Quart，以下作为实践给出如何基于Gunicorn部署<br>
+首先需要安装uvicorn（对Gunicorn进行扩展）</p>
+<pre><code>pip install uvicorn
+</code></pre>
+<p>然后在部署时指定worker class即可</p>
+<pre><code>#修改前
+gunicorn example:app -w 4
+#修改后
+gunicorn example:app -w 4 -k uvicorn.workers.UvicornWorker
+</code></pre>
+<p>（更多部署方式中指定workerclass请参考<a href="https://docs.gunicorn.org/en/stable/settings.html#worker-processes">官方文档</a>)</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[神奇歇后语]]></title>
+        <id>https://blog.changli.tech/shen-qi-xie-hou-yu/</id>
+        <link href="https://blog.changli.tech/shen-qi-xie-hou-yu/">
+        </link>
+        <updated>2021-10-21T22:37:07.000Z</updated>
+        <content type="html"><![CDATA[<p>大熊猫点外卖——笋到家了<br>
+王八办走读——鳖不住校了<br>
+小刀拉屁股——开眼了<br>
+秦始皇摸电线——嬴麻了<br>
+贝壳卖房——蚌不住了<br>
+纱布擦屁股——漏一手</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Huggingface Tokenizer truncation选择]]></title>
+        <id>https://blog.changli.tech/DGGFb-_r4/</id>
+        <link href="https://blog.changli.tech/DGGFb-_r4/">
+        </link>
+        <updated>2021-09-08T07:51:37.000Z</updated>
+        <content type="html"><![CDATA[<p><a href="https://huggingface.co/transformers/preprocessing.html">原文</a><br>
+Huggingface为句子对提供了四种截断策略。（单句只需要区分截断与否）</p>
+<pre><code>batch = tokenizer(batch_sentences, batch_of_second_sentences, padding=True, truncation=True, return_tensors=&quot;pt&quot;)
+#此处truncation可选参数有
+#1. True or 'longest_first'
+#2. 'only_second'
+#3. 'only_first'
+#4. False or 'do_not_truncate'
+</code></pre>
+<p><strong>Ture</strong> or <strong>'longest_first</strong>：对句子对中较长的句子进行截断，并且是一个个截断，而不是选择最开始长的句子一直截断直到满足要求。<br>
+<strong>'only_second</strong>：只对句子对中的第二句进行截断。<br>
+<strong>'only_first</strong>：只对句子对中的第一句进行截断。<br>
+<strong>False</strong> or <strong>'do_not_truncate</strong>：不进行截断。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Python3 生成requirements文件]]></title>
+        <id>https://blog.changli.tech/06sZpbU0H/</id>
+        <link href="https://blog.changli.tech/06sZpbU0H/">
+        </link>
+        <updated>2021-09-08T07:48:05.000Z</updated>
+        <content type="html"><![CDATA[<p>安装pipreqs包</p>
+<pre><code>pip install pipreqs
+</code></pre>
+<p>在需要生成requirements的项目路径下运行</p>
+<pre><code>pipreqs . --encoding=utf8 --force
+</code></pre>
+<p>使用requirements.txt安装依赖</p>
+<pre><code>pip install -r requirements.txt
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[冷知识Quiz]]></title>
+        <id>https://blog.changli.tech/leng-zhi-shi-quiz/</id>
+        <link href="https://blog.changli.tech/leng-zhi-shi-quiz/">
+        </link>
+        <updated>2021-07-29T08:47:40.000Z</updated>
+        <content type="html"><![CDATA[<p>1、以下哪个词不是成语：<br>
+A、秋高气爽    B、天高云淡    C、味同嚼蜡    D、令人喷饭</p>
+<p>B</p>
+<p>2、巴拿马运河东出口与西出口分别连接什么大洋？</p>
+<p>巴拿马运河为西北-东南走向，因此西出口与北出口相同，连接大西洋，东出口与南出口相同，连接太平洋。</p>
+<p>3、请找出下文语病<br>
+瑞士首都日内瓦位于日内瓦湖西南角，是瑞士联邦的第二大城市，也是一个世界著名的联合国城市。湖上大喷泉是日内瓦的象征，日内瓦湖光山色四季皆具吸引力，同时也是世界各国际机构云集的国际化城市。</p>
+<p>瑞士首都是伯尔尼而非日内瓦。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Tmux使用记录]]></title>
+        <id>https://blog.changli.tech/tmux-shi-yong-ji-lu/</id>
+        <link href="https://blog.changli.tech/tmux-shi-yong-ji-lu/">
+        </link>
+        <updated>2021-07-26T03:35:06.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="会话session相关">会话(Session)相关：</h1>
+<p>新建：在终端输入tmux即可新建一个会话<br>
+断开连接：Ctrl+B 后按 D<br>
+展示所有会话: tmux ls<br>
+回连：tmux attach自动回连最近的一个会话，也可使用<code>tmux attach -t &lt;session-name&gt;</code><br>
+关闭：Ctrl + B，键入:kill-session或在终端中使用<code>tmux kill-session -t &lt;session-name&gt;</code></p>
+<h1 id="窗口相关">窗口相关：</h1>
+<p>此项操作均需要在tmux中进行，因此都需要先按Ctrl + B<br>
+新建：c<br>
+切换：p:上一窗口，n:下一窗口</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[向日葵在macOS下无法点击和使用键盘]]></title>
+        <id>https://blog.changli.tech/xiang-ri-kui-zai-macos-xia-wu-fa-dian-ji-he-shi-yong-jian-pan/</id>
+        <link href="https://blog.changli.tech/xiang-ri-kui-zai-macos-xia-wu-fa-dian-ji-he-shi-yong-jian-pan/">
+        </link>
+        <updated>2021-04-26T01:45:16.000Z</updated>
+        <content type="html"><![CDATA[<p>基础操作这里就不多说了，查看官方的说明：《如何远程控制 Mac OS 10.14 或更高版本》</p>
+<p></p>
+<p>和官方的图片对比一下就会发现，官方的图里多了一个SunloginClient_Desktop应用，这个会不会是不能点击的原因呢？</p>
+<p>首先正常配置，在系统偏好设置 - 安全性与隐私内，将屏幕录制、文件和文件夹、完全的磁盘访问权限、辅助功能全部都加入向日葵客户端</p>
+<p>那么SunloginClient_Desktop应用怎么来呢？先点击解锁按钮后，再点击左下角的加号，进行选择程序</p>
+<p>通过打开的文件访达，使用command + shift + G快捷键，输入 /Applications/SunloginClient.app/Contents/Helpers/SunloginClient_Desktop，找到它，并点击打开</p>
+<p></p>
+<p>确保向日葵和该程序均选中后，点按锁按钮以进行更改<br>
+————————————————<br>
+版权声明：本文为CSDN博主「投篮」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。<br>
+原文链接：https://blog.csdn.net/Ericios/article/details/114081072</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[显卡深度学习性能测试（NLP）]]></title>
+        <id>https://blog.changli.tech/xian-qia-shen-du-xue-xi-xing-neng-ce-shi-nlp/</id>
+        <link href="https://blog.changli.tech/xian-qia-shen-du-xue-xi-xing-neng-ce-shi-nlp/">
+        </link>
+        <updated>2021-04-16T02:01:56.000Z</updated>
+        <content type="html"><![CDATA[<p>本文使用huggingface提供的QA脚本进行基准测试（在测试中发现V100性能与宣称有差别）<br>
+新建一个conda的虚拟环境并进入后<br>
+首先安装pytorch，这里请在<a href="https://pytorch.org/get-started/previous-versions/">pytorch安装</a>中寻找对应cuda版本的命令进行安装<br>
+然后使用如下命令安装transformers和datasets</p>
+<pre><code>pip install transformers datasets
+</code></pre>
+<p>最后使用如下命令拉取对应transformers版本的脚本（以4.5.0为例）</p>
+<pre><code>git clone --branch v4.5.0 https://github.com/huggingface/transformers.git
+</code></pre>
+<p>全部安装完成之后可进入/transformers/examples/question-answering/目录下，</p>
+<pre><code>python run_qa.py --model_name_or_path bert-base-uncased --dataset_name squad --do_train --do_eval --per_device_train_batch_size 12 --learning_rate 3e-5 --num_train_epochs 2 --max_seq_length 384 --doc_stride 128 --output_dir /tmp/debug_squad/
+</code></pre>
+<p>此处output_dir可改为自己的目录。<br>
+如果出现raw.githubusercontent.com无法连接，可以修改hosts或者拉取datasets的脚本，并在dataset_name中修改为相应目录下squad.py。例如我在run_qa.py当前目录下使用</p>
+<pre><code>git clone https://github.com/huggingface/datasets.git
+</code></pre>
+<p>拉取dataset之后，此处应修改为./datasets/datasets/squad/squad.py<br>
+同时，在run_qa.py的540行（V4.5.0）</p>
+<pre><code>metric = load_metric(&quot;squad_v2&quot; if data_args.version_2_with_negative else &quot;squad&quot;)
+</code></pre>
+<p>也要做对应修改，由于此处我仅使用squad1.1进行评测，可以直接修改else后的squad为./datasets/metrics/squad/squad.py<br>
+即</p>
+<pre><code>metric = load_metric(&quot;squad_v2&quot; if data_args.version_2_with_negative else &quot;./datasets/metrics/squad/squad.py&quot;)
+</code></pre>
+<p>如果不同则需要在metrics中自己寻找合适的metrics<br>
+最后如果有多卡但只需要评测单卡性能，可以使用CUDA_VISIBLE_DEVICES放在python前面进行选择。<br>
+例如</p>
+<pre><code>CUDA_VISIBLE_DEVICES=1 python run_qa.py --model_name_or_path bert-base-uncased --dataset_name squad --do_train --do_eval --per_device_train_batch_size 12 --learning_rate 3e-5 --num_train_epochs 2 --max_seq_length 384 --doc_stride 128 --output_dir /tmp/debug_squad/
+</code></pre>
+<p>修改后的命令为</p>
+<pre><code>CUDA_VISIBLE_DEVICES=1 python run_qa.py --model_name_or_path bert-base-uncased --dataset_name ./datasets/datasets/squad/squad.py --do_train --do_eval --per_device_train_batch_size 12 --learning_rate 3e-5 --num_train_epochs 2 --max_seq_length 384 --doc_stride 128 --output_dir /tmp/debug_squad/
+</code></pre>
+<p>即为仅有第二张卡对此程序可见，也可指定多张卡，使用,分割。</p>
+<p>此前使用此脚本实测<br>
+单卡T4 16G运行需要192分钟。<br>
+单卡V100 32G运行需要76分钟。<br>
+单卡A10 24G运行需要52分钟。<br>
+单卡A10 24G使用Docker调用运行需要60分钟，性能损失约13.33%。</p>
+]]></content>
+    </entry>
+</feed>

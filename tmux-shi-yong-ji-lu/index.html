@@ -1,0 +1,196 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tmux使用记录 | Remiel</title>
+<link rel="shortcut icon" href="https://blog.changli.tech//favicon.ico?v=1669012405019">
+<link href="https://cdn.remixicon.com/releases/v2.1.0/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://blog.changli.tech//styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Tmux使用记录 | Remiel - Atom Feed" href="https://blog.changli.tech//atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="会话(Session)相关：
+新建：在终端输入tmux即可新建一个会话
+断开连接：Ctrl+B 后按 D
+展示所有会话: tmux ls
+回连：tmux attach自动回连最近的一个会话，也可使用tmux attach -t &lt;se..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://blog.changli.tech/">
+  <img class="avatar" src="https://blog.changli.tech//images/avatar.png?v=1669012405019" alt="">
+  </a>
+  <h1 class="site-title">
+    Remiel
+  </h1>
+  <p class="site-description">
+    单纯的哔哔叨叨
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="https://blog.changli.tech/about" class="menu">
+          关于
+        </a>
+      
+    
+      
+        <a href="https://blog.changli.tech/4r07Co8st" class="menu">
+          Useful Links
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/Remielyzs" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+        <a href="https://www.zhihu.com/people/MisakaLee" target="_blank">
+          <i class="ri-zhihu-line"></i>
+        </a>
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Tmux使用记录
+            </h2>
+            <div class="post-info">
+              <span>
+                2021-07-26
+              </span>
+              <span>
+                1 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="会话session相关">会话(Session)相关：</h1>
+<p>新建：在终端输入tmux即可新建一个会话<br>
+断开连接：Ctrl+B 后按 D<br>
+展示所有会话: tmux ls<br>
+回连：tmux attach自动回连最近的一个会话，也可使用<code>tmux attach -t &lt;session-name&gt;</code><br>
+关闭：Ctrl + B，键入:kill-session或在终端中使用<code>tmux kill-session -t &lt;session-name&gt;</code></p>
+<h1 id="窗口相关">窗口相关：</h1>
+<p>此项操作均需要在tmux中进行，因此都需要先按Ctrl + B<br>
+新建：c<br>
+切换：p:上一窗口，n:下一窗口</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E4%BC%9A%E8%AF%9Dsession%E7%9B%B8%E5%85%B3">会话(Session)相关：</a></li>
+<li><a href="#%E7%AA%97%E5%8F%A3%E7%9B%B8%E5%85%B3">窗口相关：</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://blog.changli.tech/xiang-ri-kui-zai-macos-xia-wu-fa-dian-ji-he-shi-yong-jian-pan/">
+              <h3 class="post-title">
+                向日葵在macOS下无法点击和使用键盘
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  
+  <a class="rss" href="https://blog.changli.tech//atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

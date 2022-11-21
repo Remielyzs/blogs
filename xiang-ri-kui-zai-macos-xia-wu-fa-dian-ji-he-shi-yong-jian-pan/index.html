@@ -1,0 +1,192 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>向日葵在macOS下无法点击和使用键盘 | Remiel</title>
+<link rel="shortcut icon" href="https://blog.changli.tech//favicon.ico?v=1669012405019">
+<link href="https://cdn.remixicon.com/releases/v2.1.0/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://blog.changli.tech//styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="向日葵在macOS下无法点击和使用键盘 | Remiel - Atom Feed" href="https://blog.changli.tech//atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="基础操作这里就不多说了，查看官方的说明：《如何远程控制 Mac OS 10.14 或更高版本》
+
+和官方的图片对比一下就会发现，官方的图里多了一个SunloginClient_Desktop应用，这个会不会是不能点击的原因呢？
+首先正常配置..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://blog.changli.tech/">
+  <img class="avatar" src="https://blog.changli.tech//images/avatar.png?v=1669012405019" alt="">
+  </a>
+  <h1 class="site-title">
+    Remiel
+  </h1>
+  <p class="site-description">
+    单纯的哔哔叨叨
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="https://blog.changli.tech/about" class="menu">
+          关于
+        </a>
+      
+    
+      
+        <a href="https://blog.changli.tech/4r07Co8st" class="menu">
+          Useful Links
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/Remielyzs" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+        <a href="https://www.zhihu.com/people/MisakaLee" target="_blank">
+          <i class="ri-zhihu-line"></i>
+        </a>
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              向日葵在macOS下无法点击和使用键盘
+            </h2>
+            <div class="post-info">
+              <span>
+                2021-04-26
+              </span>
+              <span>
+                1 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>基础操作这里就不多说了，查看官方的说明：《如何远程控制 Mac OS 10.14 或更高版本》</p>
+<p></p>
+<p>和官方的图片对比一下就会发现，官方的图里多了一个SunloginClient_Desktop应用，这个会不会是不能点击的原因呢？</p>
+<p>首先正常配置，在系统偏好设置 - 安全性与隐私内，将屏幕录制、文件和文件夹、完全的磁盘访问权限、辅助功能全部都加入向日葵客户端</p>
+<p>那么SunloginClient_Desktop应用怎么来呢？先点击解锁按钮后，再点击左下角的加号，进行选择程序</p>
+<p>通过打开的文件访达，使用command + shift + G快捷键，输入 /Applications/SunloginClient.app/Contents/Helpers/SunloginClient_Desktop，找到它，并点击打开</p>
+<p></p>
+<p>确保向日葵和该程序均选中后，点按锁按钮以进行更改<br>
+————————————————<br>
+版权声明：本文为CSDN博主「投篮」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。<br>
+原文链接：https://blog.csdn.net/Ericios/article/details/114081072</p>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://blog.changli.tech/xian-qia-shen-du-xue-xi-xing-neng-ce-shi-nlp/">
+              <h3 class="post-title">
+                显卡深度学习性能测试（NLP）
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  
+  <a class="rss" href="https://blog.changli.tech//atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
